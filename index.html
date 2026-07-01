@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>スコア入力</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-6">
+
+    <div class="max-w-md w-full bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-xl font-bold mb-4 text-center text-gray-800">スコアを登録する</h2>
+        <form id="scoreForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">名前</label>
+                <input type="text" id="nameInput" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">数字（スコア）</label>
+                <input type="number" id="scoreInput" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+            </div>
+            <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition font-bold">登録する</button>
+        </form>
+        
+        <div class="mt-6 text-center">
+            <a href="ranking.html" class="text-indigo-500 hover:text-indigo-700 underline text-sm">ランキングを見る ➔</a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        // ⚠️ ご自身のFirebase設定に書き換えてください
+        const firebaseConfig = {
+  apiKey: "AIzaSyD6_zG0RElcpgS_755xfJTa02W6szeebI0",
+  authDomain: "election-47a58.firebaseapp.com",
+  databaseURL: "https://election-47a58-default-rtdb.firebaseio.com",
+  projectId: "election-47a58",
+  storageBucket: "election-47a58.firebasestorage.app",
+  messagingSenderId: "242994159107",
+  appId: "1:242994159107:web:68bf8fa9ea7fc737f7f836",
+  measurementId: "G-SJ6YBCRW4V"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const scoresCollection = collection(db, "scores");
+
+        const scoreForm = document.getElementById("scoreForm");
+        const nameInput = document.getElementById("nameInput");
+        const scoreInput = document.getElementById("scoreInput");
+
+        scoreForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const name = nameInput.value;
+            const score = parseInt(scoreInput.value, 10); 
+
+            try {
+                await addDoc(scoresCollection, {
+                    name: name,
+                    score: score,
+                    createdAt: new Date()
+                });
+                alert("スコアが登録されました！");
+                scoreForm.reset(); // フォームをリセット
+            } catch (error) {
+                console.error("エラー: ", error);
+                alert("登録に失敗しました。");
+            }
+        });
+    </script>
+</body>
+</html>
