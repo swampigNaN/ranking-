@@ -3,91 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>スコア入力</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>リアルタイムランキング</title>
+    <style>
+        body { 
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background-color: #f9f9f9;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { 
+            padding: 10px; 
+            width: 100%; 
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button { 
+            padding: 10px 15px; 
+            width: 100%;
+            background-color: #4CAF50; 
+            color: white; 
+            border: none; 
+            border-radius: 4px;
+            cursor: pointer; 
+            font-size: 16px;
+        }
+        button:hover { background-color: #45a049; }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px; 
+        }
+        th, td { 
+            border-bottom: 1px solid #ddd; 
+            padding: 12px 8px; 
+            text-align: left; 
+        }
+        th { background-color: #f2f2f2; }
+        .rank-1 { font-weight: bold; color: gold; }
+        .rank-2 { font-weight: bold; color: silver; }
+        .rank-3 { font-weight: bold; color: #cd7f32; /* ブロンズ */ }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-6">
+<body>
 
-    <div class="max-w-md w-full bg-white shadow-md rounded-lg p-6">
-        <h2 class="text-xl font-bold mb-4 text-center text-gray-800">スコアを登録する</h2>
-        <form id="scoreForm" class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">名前</label>
-                <input type="text" id="nameInput" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">数字（スコア）</label>
-                <input type="number" id="scoreInput" min="0" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
-            </div>
-            <button type="submit" id="submitBtn" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition font-bold disabled:bg-gray-400 disabled:cursor-not-allowed">
-                登録する
-            </button>
-        </form>
-        
-        <div class="mt-6 text-center">
-            <a href="ranking.html" class="text-indigo-500 hover:text-indigo-700 underline text-sm">ランキングを見る ➔</a>
+    <div class="container">
+        <h2>スコア登録</h2>
+        <div class="form-group">
+            <label for="nameInput">名前:</label>
+            <input type="text" id="nameInput" placeholder="例: 太郎">
         </div>
+        <div class="form-group">
+            <label for="scoreInput">数字 (スコア):</label>
+            <input type="number" id="scoreInput" placeholder="例: 1000">
+        </div>
+        <button id="saveBtn">保存する</button>
+
+        <h2 style="margin-top: 40px;">ランキング</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>順位</th>
+                    <th>名前</th>
+                    <th>数字</th>
+                </tr>
+            </thead>
+            <tbody id="rankingTableBody">
+                </tbody>
+        </table>
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // ⚠️ ご自身のFirebase設定に必ず書き換えてください
+        // ★ ここにFirebaseコンソールで取得した設定を貼り付けてください ★
         const firebaseConfig = {
-            apiKey: "AIzaSyD6_zG0RElcpgS_755xfJTa02W6szeebI0",
-            authDomain: "election-47a58.firebaseapp.com",
-            databaseURL: "https://election-47a58-default-rtdb.firebaseio.com",
-            projectId: "election-47a58",
-            storageBucket: "election-47a58.firebasestorage.app",
-            messagingSenderId: "242994159107",
-            appId: "1:242994159107:web:68bf8fa9ea7fc737f7f836",
-            measurementId: "G-SJ6YBCRW4V"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
         // Firebaseの初期化
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        const scoreForm = document.getElementById("scoreForm");
-        const nameInput = document.getElementById("nameInput");
-        const scoreInput = document.getElementById("scoreInput");
-        const submitBtn = document.getElementById("submitBtn"); // ボタン要素を取得
+        // HTML要素の取得
+        const nameInput = document.getElementById('nameInput');
+        const scoreInput = document.getElementById('scoreInput');
+        const saveBtn = document.getElementById('saveBtn');
+        const rankingTableBody = document.getElementById('rankingTableBody');
 
-        scoreForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            
-            const name = nameInput.value.trim(); // 前後の不要な空白を削除
-            const score = parseInt(scoreInput.value, 10); 
+        // ① データの保存処理
+        saveBtn.addEventListener('click', async () => {
+            const name = nameInput.value.trim();
+            const scoreText = scoreInput.value;
+            const score = Number(scoreText);
 
-            // 簡易バリデーション（スコアがマイナス、または名前が空の場合）
-            if (!name || isNaN(score) || score < 0) {
-                alert("正しい名前とスコアを入力してください。");
+            // 入力チェック
+            if (!name || scoreText === '') {
+                alert('名前と数字を両方入力してください。');
                 return;
             }
 
             try {
-                // 送信完了までボタンを無効化し、テキストを変更
-                submitBtn.disabled = true;
-                submitBtn.textContent = "登録中...";
-
-                // モジュラー形式のデータ保存（addDocを使用）
-                await addDoc(collection(db, "scores"), {
+                // Firestoreの "rankings" コレクションにデータを追加
+                await addDoc(collection(db, "rankings"), {
                     name: name,
                     score: score,
-                    createdAt: serverTimestamp()
+                    createdAt: new Date()
                 });
-
-                alert("スコアが登録されました！");
-                scoreForm.reset(); 
-            } catch (error) {
-                console.error("エラー: ", error);
-                alert("登録に失敗しました。理由: " + error.message);
-            } finally {
-                // 成功・失敗に関わらず、最後にボタンを元に戻す
-                submitBtn.disabled = false;
-                submitBtn.textContent = "登録する";
+                
+                // 入力欄をクリア
+                nameInput.value = '';
+                scoreInput.value = '';
+            } catch (e) {
+                console.error("保存エラー: ", e);
+                alert('データの保存に失敗しました。');
             }
+        });
+
+        // ② データのリアルタイム取得と表示 (数字が大きい順)
+        // "rankings" コレクションから "score" を降順 (desc) で取得
+        const q = query(collection(db, "rankings"), orderBy("score", "desc"));
+        
+        // onSnapshotを使うことで、データが追加されると自動的に画面が更新されます
+        onSnapshot(q, (snapshot) => {
+            rankingTableBody.innerHTML = ''; // 一度テーブルを空にする
+            let rank = 1;
+            
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const tr = document.createElement('tr');
+                
+                // 1〜3位には色をつけるクラスを追加
+                let rankClass = '';
+                if (rank === 1) rankClass = 'rank-1';
+                else if (rank === 2) rankClass = 'rank-2';
+                else if (rank === 3) rankClass = 'rank-3';
+
+                tr.innerHTML = `
+                    <td class="${rankClass}">${rank}</td>
+                    <td>${data.name}</td>
+                    <td>${data.score}</td>
+                `;
+                rankingTableBody.appendChild(tr);
+                rank++;
+            });
         });
     </script>
 </body>
