@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>スコア入力</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-6">
 
@@ -19,9 +17,11 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700">数字（スコア）</label>
-                <input type="number" id="scoreInput" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                <input type="number" id="scoreInput" min="0" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
             </div>
-            <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition font-bold">登録する</button>
+            <button type="submit" id="submitBtn" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition font-bold disabled:bg-gray-400 disabled:cursor-not-allowed">
+                登録する
+            </button>
         </form>
         
         <div class="mt-6 text-center">
@@ -29,46 +29,64 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
         // ⚠️ ご自身のFirebase設定に必ず書き換えてください
         const firebaseConfig = {
-  apiKey: "AIzaSyD6_zG0RElcpgS_755xfJTa02W6szeebI0",
-  authDomain: "election-47a58.firebaseapp.com",
-  databaseURL: "https://election-47a58-default-rtdb.firebaseio.com",
-  projectId: "election-47a58",
-  storageBucket: "election-47a58.firebasestorage.app",
-  messagingSenderId: "242994159107",
-  appId: "1:242994159107:web:68bf8fa9ea7fc737f7f836",
-  measurementId: "G-SJ6YBCRW4V"
+            apiKey: "AIzaSyD6_zG0RElcpgS_755xfJTa02W6szeebI0",
+            authDomain: "election-47a58.firebaseapp.com",
+            databaseURL: "https://election-47a58-default-rtdb.firebaseio.com",
+            projectId: "election-47a58",
+            storageBucket: "election-47a58.firebasestorage.app",
+            messagingSenderId: "242994159107",
+            appId: "1:242994159107:web:68bf8fa9ea7fc737f7f836",
+            measurementId: "G-SJ6YBCRW4V"
         };
 
         // Firebaseの初期化
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
         const scoreForm = document.getElementById("scoreForm");
         const nameInput = document.getElementById("nameInput");
         const scoreInput = document.getElementById("scoreInput");
+        const submitBtn = document.getElementById("submitBtn"); // ボタン要素を取得
 
         scoreForm.addEventListener("submit", async (e) => {
             e.preventDefault();
             
-            const name = nameInput.value;
+            const name = nameInput.value.trim(); // 前後の不要な空白を削除
             const score = parseInt(scoreInput.value, 10); 
 
+            // 簡易バリデーション（スコアがマイナス、または名前が空の場合）
+            if (!name || isNaN(score) || score < 0) {
+                alert("正しい名前とスコアを入力してください。");
+                return;
+            }
+
             try {
-                // データの保存
-                await db.collection("scores").add({
+                // 送信完了までボタンを無効化し、テキストを変更
+                submitBtn.disabled = true;
+                submitBtn.textContent = "登録中...";
+
+                // モジュラー形式のデータ保存（addDocを使用）
+                await addDoc(collection(db, "scores"), {
                     name: name,
                     score: score,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    createdAt: serverTimestamp()
                 });
+
                 alert("スコアが登録されました！");
                 scoreForm.reset(); 
             } catch (error) {
                 console.error("エラー: ", error);
-                // エラーが起きたらポップアップで理由を教えてくれるようにしました
                 alert("登録に失敗しました。理由: " + error.message);
+            } finally {
+                // 成功・失敗に関わらず、最後にボタンを元に戻す
+                submitBtn.disabled = false;
+                submitBtn.textContent = "登録する";
             }
         });
     </script>
