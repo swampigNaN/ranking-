@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>スコア入力</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-6">
 
@@ -13,11 +15,11 @@
         <form id="scoreForm" class="space-y-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700">名前</label>
-                <input type="text" id="nameInput" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                <input type="text" id="nameInput" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700">数字（スコア）</label>
-                <input type="number" id="scoreInput" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                <input type="number" id="scoreInput" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
             </div>
             <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition font-bold">登録する</button>
         </form>
@@ -27,11 +29,8 @@
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-        // ⚠️ ご自身のFirebase設定に書き換えてください
+    <script>
+        // ⚠️ ご自身のFirebase設定に必ず書き換えてください
         const firebaseConfig = {
   apiKey: "AIzaSyD6_zG0RElcpgS_755xfJTa02W6szeebI0",
   authDomain: "election-47a58.firebaseapp.com",
@@ -43,9 +42,9 @@
   measurementId: "G-SJ6YBCRW4V"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const scoresCollection = collection(db, "scores");
+        // Firebaseの初期化
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
         const scoreForm = document.getElementById("scoreForm");
         const nameInput = document.getElementById("nameInput");
@@ -58,16 +57,18 @@
             const score = parseInt(scoreInput.value, 10); 
 
             try {
-                await addDoc(scoresCollection, {
+                // データの保存
+                await db.collection("scores").add({
                     name: name,
                     score: score,
-                    createdAt: new Date()
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 alert("スコアが登録されました！");
-                scoreForm.reset(); // フォームをリセット
+                scoreForm.reset(); 
             } catch (error) {
                 console.error("エラー: ", error);
-                alert("登録に失敗しました。");
+                // エラーが起きたらポップアップで理由を教えてくれるようにしました
+                alert("登録に失敗しました。理由: " + error.message);
             }
         });
     </script>
