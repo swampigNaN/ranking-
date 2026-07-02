@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>トップ3 ランキング</title>
+    <title>Firebase スコア管理システム</title>
     <style>
         * {
             box-sizing: border-box;
@@ -12,8 +12,8 @@
         }
         body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
+            background-color: #f4f7f6; /* 全体的に明るい背景 */
+            color: #333; /* 文字色を黒ベースに */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -21,97 +21,188 @@
             padding: 20px;
         }
         .container {
-            background-color: #1e293b;
-            padding: 40px;
+            background-color: #ffffff; /* コンテナ背景を白に */
+            padding: 30px;
             border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
             width: 100%;
-            max-width: 500px;
+            max-width: 480px;
+        }
+        /* タブ切り替えボタンのスタイル */
+        .tab-menu {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #edf2f7;
+            padding-bottom: 10px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: none;
+            border: none;
+            color: #718096;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 8px;
+        }
+        .tab-btn:hover {
+            background-color: #f7fafc;
+            color: #2d3748;
+        }
+        .tab-btn.active {
+            background-color: #3182ce;
+            color: #ffffff;
+        }
+        /* コンテンツエリアの表示制御 */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        /* 入力フォームのスタイル */
+        h2 {
+            font-size: 22px;
+            margin-bottom: 20px;
             text-align: center;
+            color: #2c3e50;
         }
-        h1 {
-            font-size: 28px;
-            margin-bottom: 30px;
-            color: #38bdf8;
-            font-weight: 800;
-            letter-spacing: 1px;
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
         }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #4a5568;
+        }
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            background-color: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #333;
+            transition: border-color 0.2s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #3182ce;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background-color: #3182ce;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .submit-btn:hover {
+            background-color: #2b6cb0;
+        }
+        .message {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+        .success {
+            background-color: #c6f6d5;
+            color: #22543d;
+            display: block;
+        }
+        .error {
+            background-color: #fed7d7;
+            color: #742a2a;
+            display: block;
+        }
+        /* ランキングのスタイル（明るいテーマ用） */
         .ranking-list {
             list-style: none;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 12px;
         }
         .ranking-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px 24px;
-            border-radius: 12px;
-            background-color: #334155;
-            font-size: 18px;
-            font-weight: 600;
-            transition: transform 0.2s;
-        }
-        .ranking-item:hover {
-            transform: scale(1.02);
-        }
-        .rank-1 {
-            background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
-            color: #0f172a;
-        }
-        .rank-2 {
-            background: linear-gradient(135deg, #94a3b8 0%, #475569 100%);
-            color: #fff;
-        }
-        .rank-3 {
-            background: linear-gradient(135deg, #b45309 0%, #78350f 100%);
-            color: #fff;
-        }
-        .rank-number {
-            font-size: 24px;
-            font-weight: 800;
-            width: 40px;
-            text-align: left;
-        }
-        .name {
-            flex-grow: 1;
-            text-align: left;
-            padding-left: 10px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .score {
-            font-size: 22px;
-            font-weight: 800;
-        }
-        .no-data {
-            color: #94a3b8;
-            font-style: italic;
-            padding: 20px;
-        }
-        .loading {
-            color: #38bdf8;
+            padding: 14px 20px;
+            border-radius: 10px;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
             font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
         }
+        /* 順位ごとの装飾も白背景に合わせて調整 */
+        .rank-1 { background-color: #fffbeb; border-color: #fcd34d; color: #92400e; }
+        .rank-2 { background-color: #f1f5f9; border-color: #cbd5e1; color: #334155; }
+        .rank-3 { background-color: #fff7ed; border-color: #fdba74; color: #9a3412; }
+        
+        .rank-number { font-size: 20px; font-weight: 800; width: 40px; text-align: left; }
+        .name { flex-grow: 1; text-align: left; padding-left: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .score { font-size: 20px; font-weight: 800; }
+        .no-data { color: #718096; font-style: italic; padding: 20px; text-align: center; }
+        .loading { color: #3182ce; font-size: 16px; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🏆 TOP 3 RANKING</h1>
+    <div class="tab-menu">
+        <button class="tab-btn active" onclick="switchTab('input-tab')">スコア登録</button>
+        <button class="tab-btn" onclick="switchTab('ranking-tab')">🏆 ランキング</button>
+    </div>
 
-    <div id="loading" class="loading">データを読み込み中...</div>
-    
-    <ol id="ranking" class="ranking-list" style="display: none;"></ol>
+    <div id="input-tab" class="tab-content active">
+        <h2>スコアを登録する</h2>
+        <div class="form-group">
+            <label for="username">ユーザー名</label>
+            <input type="text" id="username" placeholder="例: TanakaTaro">
+        </div>
+        <div class="form-group">
+            <label for="score">点数</label>
+            <input type="number" id="score" placeholder="例: 100" min="0">
+        </div>
+        <button id="submit-btn" class="submit-btn">スコアを送信</button>
+        <div id="message-box" class="message"></div>
+    </div>
+
+    <div id="ranking-tab" class="tab-content">
+        <h2>TOP 3 RANKING</h2>
+        <div id="loading" class="loading">データを読み込み中...</div>
+        <ol id="ranking" class="ranking-list" style="display: none;"></ol>
+    </div>
 </div>
+
+<script>
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+</script>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, query, orderByValue, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, set, query, orderByValue, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    // 設定情報を適用しました
     const firebaseConfig = {
         apiKey: "AIzaSyA2lcY-0TXBKFN2VajwSuQha8TfBvJeQk8",
         authDomain: "ranking-73f77.firebaseapp.com",
@@ -126,10 +217,47 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    // スコア送信
+    const usernameInput = document.getElementById('username');
+    const scoreInput = document.getElementById('score');
+    const submitBtn = document.getElementById('submit-btn');
+    const messageBox = document.getElementById('message-box');
+
+    function showMessage(text, isSuccess) {
+        messageBox.textContent = text;
+        messageBox.className = 'message ' + (isSuccess ? 'success' : 'error');
+    }
+
+    submitBtn.addEventListener('click', () => {
+        const username = usernameInput.value.trim();
+        const score = scoreInput.value;
+
+        if (!username || !score) {
+            showMessage("ユーザー名と点数を両方入力してください。", false);
+            return;
+        }
+
+        const invalidChars = /[.#$\\[\\]]/;
+        if (invalidChars.test(username)) {
+            showMessage("ユーザー名に「.」「$」「#」「[」「]」は使えません。", false);
+            return;
+        }
+
+        set(ref(db, `scores/${username}`), Number(score))
+            .then(() => {
+                showMessage(`${username} さんのスコア (${score}点) を保存しました！`, true);
+                usernameInput.value = '';
+                scoreInput.value = '';
+            })
+            .catch((error) => {
+                showMessage("保存に失敗しました: " + error.message, false);
+            });
+    });
+
+    // ランキング取得
     const rankingList = document.getElementById('ranking');
     const loadingDiv = document.getElementById('loading');
 
-    // スコア順にソートして、上位3件を取得するクエリ
     const scoresRef = ref(db, 'scores');
     const topScoresQuery = query(scoresRef, orderByValue(), limitToLast(3));
 
@@ -151,7 +279,6 @@
             });
         });
 
-        // 降順（高い順）に並び替え
         items.reverse();
 
         items.forEach((item, index) => {
@@ -174,8 +301,8 @@
 
         rankingList.style.display = 'flex';
     }, (error) => {
-        console.error("Firebase Error:", error);
-        loadingDiv.textContent = "データの読み込みに失敗しました。ルール設定等を確認してください。";
+        console.error(error);
+        loadingDiv.textContent = "データの読み込みに失敗しました。";
     });
 </script>
 
