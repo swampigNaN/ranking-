@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase スコア管理システム</title>
+    <title>Firebase スコア管理システム（拡張UI）</title>
     <style>
+        /* グローバル設定 */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -18,35 +19,36 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 40px; /* 余白を増やして見やすく */
         }
         .container {
             background-color: #ffffff; /* コンテナ背景を白に */
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+            padding: 60px; /* 大幅に増やしたパディングで要素間の見通しを良く */
+            border-radius: 20px; /* 角丸を少し大きく */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* 影を柔らかく強調 */
             width: 100%;
-            max-width: 480px;
+            max-width: 900px; /* 幅を大幅に広げた（大きく） */
         }
+
         /* タブ切り替えボタンのスタイル */
         .tab-menu {
             display: flex;
-            gap: 10px;
-            margin-bottom: 25px;
+            gap: 20px; /* 余白を増やした */
+            margin-bottom: 40px; /* マージンを増やしてフォームと離す */
             border-bottom: 2px solid #edf2f7;
-            padding-bottom: 10px;
+            padding-bottom: 15px; /* パディングを増やした */
         }
         .tab-btn {
             flex: 1;
-            padding: 12px;
+            padding: 18px 25px; /* 大きくして押しやすく */
             background: none;
             border: none;
             color: #718096;
-            font-size: 16px;
+            font-size: 20px; /* 大幅に上げたフォントサイズで文字を見やすく */
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-            border-radius: 8px;
+            border-radius: 10px; /* 角丸を大きく */
         }
         .tab-btn:hover {
             background-color: #f7fafc;
@@ -55,7 +57,9 @@
         .tab-btn.active {
             background-color: #3182ce;
             color: #ffffff;
+            font-weight: 700; /* より強調 */
         }
+
         /* コンテンツエリアの表示制御 */
         .tab-content {
             display: none;
@@ -63,32 +67,33 @@
         .tab-content.active {
             display: block;
         }
+
         /* 入力フォームのスタイル */
         h2 {
-            font-size: 22px;
-            margin-bottom: 20px;
+            font-size: 36px; /* 大幅に上げたフォントサイズでタイトルを見やすく */
+            margin-bottom: 30px; /* マージンを増やして見やすく */
             text-align: center;
             color: #2c3e50;
         }
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 30px; /* マージンを増やして各項目を離す */
             text-align: left;
         }
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px; /* マージンを増やして入力欄と離す */
             font-weight: 600;
-            font-size: 14px;
+            font-size: 18px; /* フォントサイズを上げて読みやすく */
             color: #4a5568;
         }
         input[type="text"],
         input[type="number"] {
             width: 100%;
-            padding: 12px;
+            padding: 18px 20px; /* 大きくして入力しやすく、見やすく */
             background-color: #ffffff;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
+            border: 3px solid #e2e8f0; /* ボーダーを太くして視認性を向上 */
+            border-radius: 12px; /* 角丸を大きく */
+            font-size: 20px; /* 大幅に上げたフォントサイズで入力文字を見やすく */
             color: #333;
             transition: border-color 0.2s;
         }
@@ -98,25 +103,26 @@
         }
         .submit-btn {
             width: 100%;
-            padding: 14px;
+            padding: 20px; /* 大きくして押しやすく */
             background-color: #3182ce;
             color: #ffffff;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 12px; /* 角丸を大きく */
+            font-size: 24px; /* 大幅に上げたフォントサイズでボタンを強調 */
+            font-weight: 700; /* より強調 */
             cursor: pointer;
             transition: background-color 0.2s;
+            margin-top: 20px; /* マージンを追加してフォームと離す */
         }
         .submit-btn:hover {
             background-color: #2b6cb0;
         }
         .message {
-            margin-top: 16px;
-            padding: 12px;
-            border-radius: 6px;
+            margin-top: 20px; /* マージンを増やした */
+            padding: 15px; /* パディングを増やした */
+            border-radius: 10px; /* 角丸を大きく */
             text-align: center;
-            font-size: 14px;
+            font-size: 16px; /* フォントサイズを上げた */
             display: none;
         }
         .success {
@@ -129,35 +135,85 @@
             color: #742a2a;
             display: block;
         }
-        /* ランキングのスタイル（明るいテーマ用） */
+
+        /* ランキングのスタイル（明るいテーマ用、拡張） */
         .ranking-list {
             list-style: none;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 20px; /* 余白を増やして各順位を離す */
         }
         .ranking-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 14px 20px;
-            border-radius: 10px;
+            padding: 25px 40px; /* 大幅に大きくした（見やすく、大きく） */
+            border-radius: 15px; /* 角丸を大きく */
             background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            font-size: 16px;
+            border: 2px solid #e2e8f0; /* ボーダーを太くして視認性を向上 */
+            font-size: 24px; /* 大幅に上げたフォントサイズで見やすく、大きく */
             font-weight: 600;
             color: #2d3748;
+            transition: transform 0.2s; /* ホバー効果を追加 */
         }
-        /* 順位ごとの装飾も白背景に合わせて調整 */
-        .rank-1 { background-color: #fffbeb; border-color: #fcd34d; color: #92400e; }
-        .rank-2 { background-color: #f1f5f9; border-color: #cbd5e1; color: #334155; }
-        .rank-3 { background-color: #fff7ed; border-color: #fdba74; color: #9a3412; }
-        
-        .rank-number { font-size: 20px; font-weight: 800; width: 40px; text-align: left; }
-        .name { flex-grow: 1; text-align: left; padding-left: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .score { font-size: 20px; font-weight: 800; }
-        .no-data { color: #718096; font-style: italic; padding: 20px; text-align: center; }
-        .loading { color: #3182ce; font-size: 16px; text-align: center; }
+        .ranking-item:hover {
+            transform: translateY(-5px); /* 少し浮かせて強調 */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 順位ごとの装飾（見やすく、魅力的、白背景） */
+        .rank-1 {
+            background-color: #fffbeb;
+            border-color: #fcd34d;
+            color: #92400e;
+            box-shadow: inset 0 0 10px rgba(252, 211, 77, 0.3); /* 内側の影で立体感 */
+        }
+        .rank-2 {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #334155;
+            box-shadow: inset 0 0 10px rgba(203, 213, 225, 0.3);
+        }
+        .rank-3 {
+            background-color: #fff7ed;
+            border-color: #fdba74;
+            color: #9a3412;
+            box-shadow: inset 0 0 10px rgba(253, 186, 116, 0.3);
+        }
+
+        .rank-number {
+            font-size: 32px; /* 大幅に大きくした（見やすく） */
+            font-weight: 800;
+            width: 60px; /* 幅を広げた */
+            text-align: left;
+        }
+        .name {
+            flex-grow: 1;
+            text-align: left;
+            padding-left: 10px; /* 余白を増やした */
+            font-size: 28px; /* 大幅に大きくした（見やすく、強調） */
+            font-weight: 600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .score {
+            font-size: 32px; /* 大幅に大きくした（見やすく、強調） */
+            font-weight: 800;
+            color: inherit; /* 親要素の色を継承 */
+        }
+        .no-data {
+            color: #718096;
+            font-style: italic;
+            padding: 30px; /* パディングを増やした */
+            text-align: center;
+            font-size: 18px; /* フォントサイズを上げた */
+        }
+        .loading {
+            color: #3182ce;
+            font-size: 18px; /* フォントサイズを上げた */
+            text-align: center;
+        }
     </style>
 </head>
 <body>
