@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase スコア管理システム（陣営選択つき・TOP 5）</title>
+    <title>きのこの山 vs たけのこの里 スコアランキング</title>
     <style>
         /* --- CSS（デザイン） --- */
         * {
@@ -112,23 +112,30 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            padding: 15px;
+            gap: 12px;
+            padding: 18px;
             background-color: #f8fafc;
             border: 3px solid #e2e8f0;
             border-radius: 12px;
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 20px;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
         }
-        .faction-label:has(input:checked) {
-            border-color: #3182ce;
-            background-color: #ebf8ff;
-            color: #3182ce;
+        /* きのこの山のスタイル */
+        .faction-label-kinoko:has(input:checked) {
+            border-color: #e53e3e; /* 赤系 */
+            background-color: #fff5f5;
+            color: #e53e3e;
+        }
+        /* たけのこの里のスタイル */
+        .faction-label-takenoko:has(input:checked) {
+            border-color: #38a169; /* 緑系 */
+            background-color: #f0fff4;
+            color: #38a169;
         }
         .faction-label input[type="radio"] {
-            transform: scale(1.5);
+            transform: scale(1.6);
             cursor: pointer;
         }
 
@@ -205,13 +212,13 @@
         
         /* 陣営画像のスタイル */
         .faction-img {
-            width: 56px;
-            height: 56px;
+            width: 64px;
+            height: 64px;
             border-radius: 50%;
             object-fit: cover;
             margin-right: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            border: 2px solid #fff;
+            border: 3px solid #fff;
         }
 
         .name {
@@ -266,14 +273,11 @@
         <div class="form-group">
             <label class="input-label">所属陣営</label>
             <div class="faction-options">
-                <label class="faction-label">
-                    <input type="radio" name="faction" value="red" checked> 赤陣営
+                <label class="faction-label faction-label-kinoko">
+                    <input type="radio" name="faction" value="kinoko" checked> 🍄 きのこの山
                 </label>
-                <label class="faction-label">
-                    <input type="radio" name="faction" value="blue"> 青陣営
-                </label>
-                <label class="faction-label">
-                    <input type="radio" name="faction" value="green"> 緑陣営
+                <label class="faction-label faction-label-takenoko">
+                    <input type="radio" name="faction" value="takenoko"> 🎋 たけのこの里
                 </label>
             </div>
         </div>
@@ -305,11 +309,12 @@
         measurementId: "G-9W2L9K2SW3"
     };
 
-    // 2. 陣営ごとの画像設定（好きな画像のURLに変えてください）
+    // ★★★ここに表示したい画像のURLを指定してください★★★
+    // あなたが用意した「きのこの山」と「たけのこの里」の画像のURLを、
+    // それぞれのダブルクォーテーションの間に貼り付けてください。
     const factionImages = {
-        red: "https://placehold.co/100x100/ff4444/ffffff?text=Red",
-        blue: "https://placehold.co/100x100/4444ff/ffffff?text=Blue",
-        green: "https://placehold.co/100x100/44ff44/ffffff?text=Green"
+        kinoko: "https://placehold.co/120x120/cc3333/ffffff?text=Kinoko",   // きのこの山の画像URL
+        takenoko: "https://placehold.co/120x120/339933/ffffff?text=Takenoko" // たけのこの里の画像URL
     };
 
     const app = initializeApp(firebaseConfig);
@@ -391,8 +396,10 @@
         const items = [];
         snapshot.forEach((childSnapshot) => {
             const data = childSnapshot.val();
+            // 古いデータ（数字のみ）が混ざっていた場合のエラー防止処理
             const userScore = typeof data === 'number' ? data : data.score;
-            const userFaction = data.faction || 'red';
+            // 陣営がない場合は仮できのこにする
+            const userFaction = data.faction || 'kinoko';
 
             items.push({
                 name: childSnapshot.key,
@@ -413,8 +420,10 @@
             if (rank === 2) medal = '🥈 ';
             if (rank === 3) medal = '🥉 ';
 
-            const imgSrc = factionImages[item.faction] || factionImages['red'];
+            // 陣営に応じた画像URLを取得
+            const imgSrc = factionImages[item.faction] || factionImages['kinoko'];
 
+            // imgタグを追加して画像アイコンを表示
             li.innerHTML = `
                 <span class="rank-number">${rank}位</span>
                 <img src="${imgSrc}" class="faction-img" alt="${item.faction} icon">
