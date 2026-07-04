@@ -120,7 +120,7 @@
         <h2>あなたのスコアを登録</h2>
         <div class="form-group">
             <label class="main-label">ユーザー名</label>
-            <input type="text" id="username" placeholder="例: 鳳鳴太郎">
+            <input type="text" id="username" placeholder="例: たなか太郎">
         </div>
         <div class="form-group">
             <label class="main-label">点数</label>
@@ -130,7 +130,7 @@
             <label class="main-label">陣営を選択（画像をクリック！）</label>
             <div class="faction-select-container">
                 <label class="faction-card faction-card-kinoko">
-                    <input type="radio" name="faction" value="kinoko" checked>
+                    <input type="radio" name="faction" value="kinoko">
                     <img src="./kinoko.png" alt="きのこの山">
                     <p>きのこの山</p>
                 </label>
@@ -168,7 +168,7 @@
         measurementId: "G-9W2L9K2SW3"
     };
 
-    // ローカル画像（同じフォルダにある前提）
+    // ローカル画像
     const factionImages = {
         kinoko: "./kinoko.png",
         takenoko: "./takenoko.png"
@@ -198,15 +198,24 @@
     submitBtn.addEventListener('click', () => {
         const username = usernameInput.value.trim();
         const score = scoreInput.value;
-        const faction = document.querySelector('input[name="faction"]:checked').value;
+        const selectedFaction = document.querySelector('input[name="faction"]:checked');
 
+        // 名前か点数が空欄ならエラー
         if (!username || !score) {
             messageBox.textContent = "名前と点数を入力してください。";
             messageBox.className = "message error";
             return;
         }
 
-        // Firebaseにオブジェクトとして保存
+        // 陣営が未選択ならエラー
+        if (!selectedFaction) {
+            messageBox.textContent = "陣営を選択してください。";
+            messageBox.className = "message error";
+            return;
+        }
+
+        const faction = selectedFaction.value;
+
         set(ref(db, `scores/${username}`), {
             score: Number(score),
             faction: faction
@@ -215,6 +224,8 @@
             messageBox.className = "message success";
             usernameInput.value = '';
             scoreInput.value = '';
+            // ラジオボタンの選択を解除する
+            selectedFaction.checked = false;
         }).catch(err => {
             messageBox.textContent = "通信エラー: " + err.message;
             messageBox.className = "message error";
@@ -225,7 +236,6 @@
     const rankingList = document.getElementById('ranking');
     const loadingDiv = document.getElementById('loading');
     const scoresRef = ref(db, 'scores');
-    // scoreで並び替えて上位5件を取得
     const topScoresQuery = query(scoresRef, orderByChild('score'), limitToLast(5));
 
     onValue(topScoresQuery, (snapshot) => {
@@ -243,7 +253,7 @@
             const val = child.val();
             items.push({ name: child.key, score: val.score, faction: val.faction });
         });
-        items.reverse(); // 高い順にする
+        items.reverse(); 
 
         items.forEach((item, i) => {
             const li = document.createElement('li');
