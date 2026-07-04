@@ -315,7 +315,7 @@
     const loadingDiv = document.getElementById('loading');
 
     const scoresRef = ref(db, 'scores');
-    const topScoresQuery = query(scoresRef, orderByValue(), limitToLast(3));
+    const topScoresQuery = query(scoresRef, orderByValue(), limitToLast(5));
 
     onValue(topScoresQuery, (snapshot) => {
         loadingDiv.style.display = 'none';
