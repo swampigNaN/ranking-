@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>きのこ vs たけのこ リアルタイム・ランキング</title>
     <style>
-        /* --- デザイン設定 (大きく、見やすく) --- */
+        /* --- デザイン（大きく、美しく、チョコレート・テーマ） --- */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
-            background-color: #fcfaf2; /* 和菓子のような温かい白 */
-            color: #4a2c2a; /* チョコのような茶色 */
+            background-color: #fcfaf2;
+            color: #4a2c2a;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -30,87 +30,94 @@
         /* タブ切り替え */
         .tab-menu { display: flex; gap: 20px; margin-bottom: 40px; border-bottom: 3px solid #eee; padding-bottom: 15px; }
         .tab-btn {
-            flex: 1; padding: 20px; background: none; border: none; color: #aaa;
-            font-size: 24px; font-weight: bold; cursor: pointer; transition: 0.3s; border-radius: 15px;
+            flex: 1; padding: 25px; background: none; border: none; color: #aaa;
+            font-size: 28px; font-weight: bold; cursor: pointer; transition: 0.3s; border-radius: 15px;
         }
+        .tab-btn:hover { background-color: #f9f9f9; }
         .tab-btn.active { background-color: #5d4037; color: #fff; }
 
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        h2 { font-size: 42px; margin-bottom: 30px; color: #5d4037; }
+        h2 { font-size: 48px; margin-bottom: 40px; color: #5d4037; }
 
-        /* 入力欄 */
-        .form-group { margin-bottom: 40px; text-align: left; }
-        label.main-label { display: block; margin-bottom: 15px; font-weight: bold; font-size: 22px; color: #5d4037; }
+        /* 入力エリア */
+        .form-group { margin-bottom: 45px; text-align: left; }
+        label.main-label { display: block; margin-bottom: 15px; font-weight: bold; font-size: 24px; color: #5d4037; }
         input[type="text"], input[type="number"] {
-            width: 100%; padding: 20px; border: 3px solid #eee; border-radius: 15px;
-            font-size: 24px; transition: 0.3s;
+            width: 100%; padding: 25px; border: 3px solid #eee; border-radius: 15px;
+            font-size: 26px; transition: 0.3s;
         }
         input:focus { border-color: #5d4037; outline: none; }
 
         /* --- 陣営選択 (画像ボタン) --- */
-        .faction-select-container { display: flex; gap: 30px; justify-content: center; }
+        .faction-select-container { display: flex; gap: 30px; justify-content: center; margin-top: 10px; }
         .faction-card {
             flex: 1; cursor: pointer; position: relative;
-            border: 5px solid transparent; border-radius: 20px; padding: 20px;
-            transition: 0.3s; background: #f9f9f9; text-align: center;
+            border: 6px solid #f0f0f0; border-radius: 25px; padding: 30px;
+            transition: 0.4s; background: #fafafa; text-align: center;
         }
         .faction-card img {
-            width: 150px; height: 150px; object-fit: contain; margin-bottom: 15px;
-            filter: grayscale(100%); opacity: 0.6; transition: 0.3s;
+            width: 180px; height: 180px; object-fit: contain; margin-bottom: 15px;
+            filter: grayscale(100%); opacity: 0.5; transition: 0.4s;
         }
-        .faction-card p { font-size: 22px; font-weight: bold; }
+        .faction-card p { font-size: 24px; font-weight: bold; color: #999; }
         
         /* ラジオボタンは隠す */
         .faction-card input[type="radio"] { display: none; }
 
-        /* 選択時のスタイル */
-        .faction-card:has(input:checked) { border-color: #5d4037; background-color: #fff; transform: translateY(-10px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        /* 選択された時の動き */
+        .faction-card:has(input:checked) { transform: translateY(-12px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); background: #fff; }
         .faction-card:has(input:checked) img { filter: grayscale(0%); opacity: 1; }
+        .faction-card:has(input:checked) p { color: inherit; }
+
         .faction-card-kinoko:has(input:checked) { border-color: #e53e3e; color: #e53e3e; }
         .faction-card-takenoko:has(input:checked) { border-color: #38a169; color: #38a169; }
 
         .submit-btn {
-            width: 100%; padding: 25px; background-color: #5d4037; color: #fff;
-            border: none; border-radius: 15px; font-size: 28px; font-weight: bold;
-            cursor: pointer; transition: 0.3s; margin-top: 30px;
+            width: 100%; padding: 30px; background-color: #5d4037; color: #fff;
+            border: none; border-radius: 15px; font-size: 32px; font-weight: bold;
+            cursor: pointer; transition: 0.3s; margin-top: 40px;
         }
         .submit-btn:hover { background-color: #4a2c2a; transform: scale(1.02); }
 
-        .message { margin-top: 25px; padding: 20px; border-radius: 15px; font-size: 18px; display: none; }
-        .success { background-color: #d4edda; color: #155724; display: block; }
-        .error { background-color: #f8d7da; color: #721c24; display: block; }
+        .message { margin-top: 30px; padding: 25px; border-radius: 15px; font-size: 20px; display: none; font-weight: bold; }
+        .success { background-color: #d4edda; color: #155724; display: block; border: 2px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; display: block; border: 2px solid #f5c6cb; }
 
-        /* --- ランキング --- */
+        /* --- ランキング画面 --- */
         .ranking-list { list-style: none; display: flex; flex-direction: column; gap: 20px; }
         .ranking-item {
-            display: flex; align-items: center; padding: 25px 40px; border-radius: 20px;
-            background: #fff; border: 2px solid #eee; font-size: 28px; font-weight: bold;
+            display: flex; align-items: center; padding: 25px 45px; border-radius: 20px;
+            background: #fff; border: 2px solid #eee; font-size: 32px; font-weight: bold;
             transition: 0.3s;
         }
-        .rank-num { width: 80px; font-size: 36px; font-weight: 900; color: #aaa; }
+        .rank-num { width: 80px; font-size: 42px; font-weight: 900; color: #ccc; text-align: left; }
+        .rank-1 { background-color: #fffbeb; border-color: #fcd34d; }
         .rank-1 .rank-num { color: #f1c40f; }
+        .rank-2 { background-color: #f1f5f9; border-color: #cbd5e1; }
         .rank-2 .rank-num { color: #95a5a6; }
+        .rank-3 { background-color: #fff7ed; border-color: #fdba74; }
         .rank-3 .rank-num { color: #d35400; }
         
-        .rank-img { width: 80px; height: 80px; object-fit: contain; margin: 0 30px; border-radius: 50%; background: #fdfdfd; border: 1px solid #eee; }
-        .rank-name { flex-grow: 1; text-align: left; }
-        .rank-score { font-size: 32px; color: #5d4037; }
+        .rank-img { width: 90px; height: 90px; object-fit: contain; margin: 0 35px; border-radius: 50%; background: #fff; border: 2px solid #eee; }
+        .rank-name { flex-grow: 1; text-align: left; color: #5d4037; }
+        .rank-score { font-size: 36px; color: #5d4037; font-weight: 900; }
 
-        .loading { font-size: 22px; color: #aaa; margin: 50px 0; }
+        .loading { font-size: 24px; color: #aaa; margin: 60px 0; font-weight: bold; }
+        .no-data { font-size: 22px; color: #999; padding: 50px; font-style: italic; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="tab-menu">
-        <button class="tab-btn active" data-tab="input-tab">スコア登録</button>
-        <button class="tab-btn" data-tab="ranking-tab">🏆 ランキング</button>
+        <button class="tab-btn active" data-tab="input-tab">参戦登録</button>
+        <button class="tab-btn" data-tab="ranking-tab">🏆 戦況ランキング</button>
     </div>
 
     <div id="input-tab" class="tab-content active">
-        <h2>参戦する</h2>
+        <h2>あなたのスコアを登録</h2>
         <div class="form-group">
             <label class="main-label">ユーザー名</label>
             <input type="text" id="username" placeholder="例: たなか太郎">
@@ -120,16 +127,16 @@
             <input type="number" id="score" placeholder="0" min="0">
         </div>
         <div class="form-group">
-            <label class="main-label">陣営を選択</label>
+            <label class="main-label">陣営を選択（画像をクリック！）</label>
             <div class="faction-select-container">
                 <label class="faction-card faction-card-kinoko">
                     <input type="radio" name="faction" value="kinoko" checked>
-                    <img src="./kinoko.png" alt="きのこ">
+                    <img src="./kinoko.png" alt="きのこの山">
                     <p>きのこの山</p>
                 </label>
                 <label class="faction-card faction-card-takenoko">
                     <input type="radio" name="faction" value="takenoko">
-                    <img src="./takenoko.png" alt="たけのこ">
+                    <img src="./takenoko.png" alt="たけのこの里">
                     <p>たけのこの里</p>
                 </label>
             </div>
@@ -139,8 +146,8 @@
     </div>
 
     <div id="ranking-tab" class="tab-content">
-        <h2>TOP 5</h2>
-        <div id="loading" class="loading">戦況を読み込み中...</div>
+        <h2>TOP 5 エリート</h2>
+        <div id="loading" class="loading">最新の戦況を読み込み中...</div>
         <ol id="ranking" class="ranking-list" style="display: none;"></ol>
     </div>
 </div>
@@ -149,7 +156,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getDatabase, ref, set, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    // --- Firebaseの設定 (あなたの情報を適用済み) ---
+    // Firebaseの設定
     const firebaseConfig = {
         apiKey: "AIzaSyA2lcY-0TXBKFN2VajwSuQha8TfBvJeQk8",
         authDomain: "ranking-73f77.firebaseapp.com",
@@ -161,16 +168,16 @@
         measurementId: "G-9W2L9K2SW3"
     };
 
-    // --- ローカル画像の設定 ---
+    // ローカル画像（同じフォルダにある前提）
     const factionImages = {
-        kinoko: "./kinoko.png",     // 同じフォルダのきのこ画像
-        takenoko: "./takenoko.png"   // 同じフォルダのたけのこ画像
+        kinoko: "./kinoko.png",
+        takenoko: "./takenoko.png"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // タブ切り替え
+    // --- タブ切り替え処理 ---
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
     tabBtns.forEach(btn => {
@@ -182,7 +189,7 @@
         });
     });
 
-    // スコア送信
+    // --- スコア送信処理 ---
     const usernameInput = document.getElementById('username');
     const scoreInput = document.getElementById('score');
     const submitBtn = document.getElementById('submit-btn');
@@ -199,24 +206,26 @@
             return;
         }
 
+        // Firebaseにオブジェクトとして保存
         set(ref(db, `scores/${username}`), {
             score: Number(score),
             faction: faction
         }).then(() => {
-            messageBox.textContent = `${username}さんのスコアを保存しました！`;
+            messageBox.textContent = `成功！${username}さんのスコアを保存しました。`;
             messageBox.className = "message success";
             usernameInput.value = '';
             scoreInput.value = '';
         }).catch(err => {
-            messageBox.textContent = "エラーが発生しました: " + err.message;
+            messageBox.textContent = "通信エラー: " + err.message;
             messageBox.className = "message error";
         });
     });
 
-    // ランキングリアルタイム更新
+    // --- ランキング取得処理 ---
     const rankingList = document.getElementById('ranking');
     const loadingDiv = document.getElementById('loading');
     const scoresRef = ref(db, 'scores');
+    // scoreで並び替えて上位5件を取得
     const topScoresQuery = query(scoresRef, orderByChild('score'), limitToLast(5));
 
     onValue(topScoresQuery, (snapshot) => {
@@ -224,7 +233,7 @@
         rankingList.innerHTML = '';
 
         if (!snapshot.exists()) {
-            rankingList.innerHTML = '<li class="no-data">まだデータがありません</li>';
+            rankingList.innerHTML = '<li class="no-data">まだ参戦データがありません。一番乗りを目指そう！</li>';
             rankingList.style.display = 'block';
             return;
         }
@@ -234,7 +243,7 @@
             const val = child.val();
             items.push({ name: child.key, score: val.score, faction: val.faction });
         });
-        items.reverse();
+        items.reverse(); // 高い順にする
 
         items.forEach((item, i) => {
             const li = document.createElement('li');
@@ -245,14 +254,15 @@
                 <span class="rank-num">${i+1}</span>
                 <img src="${imgSrc}" class="rank-img" alt="icon">
                 <span class="rank-name">${item.name}</span>
-                <span class="rank-score">${item.score}点</span>
+                <span class="rank-score">${item.score} 点</span>
             `;
             rankingList.appendChild(li);
         });
         rankingList.style.display = 'flex';
+    }, (error) => {
+        console.error(error);
+        loadingDiv.textContent = "読み込みエラーが発生しました。ルール設定を確認してください。";
     });
 </script>
 </body>
 </html>
-
-「きのこの山」と「たけのこの里」のスコア管理システムが完成しました！ご自身のPCで作成した `index.html` と同じ場所に、画像ファイルを配置してぜひ試してみてください。
